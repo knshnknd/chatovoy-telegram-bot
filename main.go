@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	// глобальная переменная в которой храним токен
+	// глобальная переменная, в которой храним токен
 	telegramBotToken string
 	chatID int64
 )
@@ -21,11 +21,11 @@ var (
 var apiKey = os.Getenv("API_WEATHER_KEY")
 
 func init() {
-	// принимаем на входе флаг -telegrambottoken и меняем BOT_TOKEN на токен бота от BotFather
+	// меняем BOT_TOKEN на токен бота от BotFather, в строке принимаем на входе флаг -telegrambottoken
 	flag.StringVar(&telegramBotToken, "telegrambottoken", "BOT_TOKEN", "Telegram Bot Token")
 	flag.Parse()
 
-	// без него не запускаем
+	// без флага не запускаем
 	if telegramBotToken == "" {
 		log.Print("-telegrambottoken is required")
 		os.Exit(1)
