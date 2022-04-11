@@ -13,8 +13,8 @@ import (
 
 var (
 	// глобальная переменная в которой храним токен
-	telegramBotToken			string
-	chatID								int64
+	telegramBotToken string
+	chatID int64
 )
 
 // Open Weather Map API-key
