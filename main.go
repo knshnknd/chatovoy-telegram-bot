@@ -13,8 +13,8 @@ import (
 
 var (
 	// глобальная переменная в которой храним токен
-	telegramBotToken 	string
-	chatID     				int64
+	telegramBotToken			string
+	chatID								int64
 )
 
 // Open Weather Map API-key
@@ -66,12 +66,12 @@ func main() {
 
 		if update.Message == nil {continue}
 
-		// разбирает сообщение на слова, региоруем на первое слово
+		// разбирает сообщение на слова, реагируем на первое слово
 		splitTextFromMessage := strings.Split(messageFromUser, " ")
 		switch splitTextFromMessage[0] {
 		case "сколько":
 
-			// считаем без слова "сколько"
+			// считаем слова без слова "сколько"
 			reply = "Количество слов в этом сообщении без слова «сколько»: " + strconv.Itoa(len(splitTextFromMessage) - 1)
 		case "погода":
 			w, err := owm.NewCurrent("F", "ru", apiKey)
@@ -85,7 +85,7 @@ func main() {
 			reply = ""
 		}
 
-		// свитч на обработку комманд комманда - сообщение, начинающееся с "/"
+		// свитч на обработку комманд, комманда - сообщение, начинающееся с "/"
 		switch update.Message.Command() {
 		case "start":
 			reply = "Привет."
@@ -93,7 +93,7 @@ func main() {
 			reply = chatID
 		}
 
-		// логируем от кого какое сообщение пришло
+		// логируем, от кого какое сообщение пришло
 		log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
 
 		// создаем ответное сообщение и отправляем
