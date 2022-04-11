@@ -70,7 +70,6 @@ func main() {
 		splitTextFromMessage := strings.Split(messageFromUser, " ")
 		switch splitTextFromMessage[0] {
 		case "сколько":
-
 			// считаем слова без слова "сколько"
 			reply = "Количество слов в этом сообщении без слова «сколько»: " + strconv.Itoa(len(splitTextFromMessage) - 1)
 		case "погода":
@@ -97,7 +96,7 @@ func main() {
 		log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
 
 		// создаем ответное сообщение и отправляем
-	  msg := tgbotapi.NewMessage(chatID, reply)
+		msg := tgbotapi.NewMessage(chatID, reply)
 		bot.Send(msg)
 	}
 }
