@@ -17,11 +17,12 @@ var (
 	chatID     				int64
 )
 
-var apiKey = os.Getenv("AP_WEATHER_KEY")
+// Open Weather Map API-key
+var apiKey = os.Getenv("API_WEATHER_KEY")
 
 func init() {
-	// принимаем на входе флаг -telegrambottoken
-  flag.StringVar(&telegramBotToken, "telegrambottoken", "BOT_TOKEN", "Telegram Bot Token")
+	// принимаем на входе флаг -telegrambottoken и меняем BOT_TOKEN на токен бота от BotFather
+	flag.StringVar(&telegramBotToken, "telegrambottoken", "BOT_TOKEN", "Telegram Bot Token")
 	flag.Parse()
 
 	// без него не запускаем
