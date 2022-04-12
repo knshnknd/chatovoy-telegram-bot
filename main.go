@@ -11,7 +11,7 @@ import (
 
 var (
 	// глобальная переменная, в которой храним токен
-	telegramBotToken = "5134566697:AAFBfUlRLahSk_vRE-OOGM8NezYUPMC7O14"
+	telegramBotToken string
 	//chatID           int64  = -1001416816634
 )
 
