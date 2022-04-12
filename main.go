@@ -1,20 +1,18 @@
 package main
 
 import (
-	"github.com/Syfaro/telegram-bot-api"
-	owm "github.com/briandowns/openweathermap"
-
+	"flag"
+	tgbotapi "github.com/Syfaro/telegram-bot-api"
 	"log"
 	"os"
 	"strconv"
 	"strings"
-	"flag"
 )
 
 var (
 	// глобальная переменная, в которой храним токен
-	telegramBotToken string
-	chatID int64
+	telegramBotToken = "5134566697:AAFBfUlRLahSk_vRE-OOGM8NezYUPMC7O14"
+	//chatID           int64  = -1001416816634
 )
 
 // Open Weather Map API-key
@@ -30,11 +28,14 @@ func init() {
 		log.Print("-telegrambottoken is required")
 		os.Exit(1)
 	}
+}
 
 func main() {
 	// используя токен, создаем новый инстанс бота
 	bot, err := tgbotapi.NewBotAPI(telegramBotToken)
-	if err != nil {log.Panic(err)}
+	if err != nil {
+		log.Panic(err)
+	}
 
 	// пишем об этом в консоль
 	log.Printf("Authorized on account %s", bot.Self.UserName)
@@ -44,56 +45,53 @@ func main() {
 	u.Timeout = 60
 
 	// используя конфиг, создаем канал, в который будут прилетать новые сообщения
-	updates := bot.GetUpdatesChan(u)
+	updates, _ := bot.GetUpdatesChan(u)
 
 	// в канал updates прилетают структуры типа Update, вычитываем их и обрабатываем
 	for update := range updates {
-		// сообщение в Lower Case
-		messageFromUser := strings.ToLower(update.Message.Text)
-		chatID := strconv.FormatInt(int64(update.Message.Chat.ID), 10)
 
-		var reply string
-
-		// универсальный ответ на любое сообщение
-		switch messageFromUser {
-		case "дурак":
-			reply = "Сам дурак."
-		case "айди":
-			reply = strconv.FormatInt(int64(update.Message.Chat.ID), 10)
-		default:
-			reply = ""
+		if update.Message == nil {
+			continue
 		}
 
-		if update.Message == nil {continue}
+		//объявляем переменные которые понадобятся нам для обработки сообщения
+		var reply string = "я ничего не понял"
+		message := update.Message.Text
+		messageLowercase := strings.ToLower(message)
+		chatID := update.Message.Chat.ID
+		splitTextFromMessage := strings.Split(messageLowercase, " ")
+		command := update.Message.Command()
 
-		// разбирает сообщение на слова, реагируем на первое слово
-		splitTextFromMessage := strings.Split(messageFromUser, " ")
+		// логируем, от кого какое сообщение пришло
+		log.Printf("[%s] %s", update.Message.From.UserName, message)
+
 		switch splitTextFromMessage[0] {
 		case "сколько":
 			// считаем слова без слова "сколько"
-			reply = "Количество слов в этом сообщении без слова «сколько»: " + strconv.Itoa(len(splitTextFromMessage) - 1)
+			reply = "Количество слов в этом сообщении без слова «сколько»: " + strconv.Itoa(len(splitTextFromMessage)-1)
 		case "погода":
-			w, err := owm.NewCurrent("F", "ru", apiKey)
-			if err != nil {log.Fatalln(err)}
-
-			// пока что для примера - Moscow, а вообще второе слово в сообщении - splitTextFromMessage[1]
-			w.CurrentByName("Moscow")
-			// строчка не ребаотает :С
-			// reply = w
-		default:
+			//w, err := owm.NewCurrent("F", "ru", apiKey)
+			//if err != nil {
+			//	log.Fatalln(err)
+			//}
+			//
+			//пока что для примера - Moscow, а вообще второе слово в сообщении - splitTextFromMessage[1]
+			//w.CurrentByName("Moscow")
+			//строчка не ребаотает :С
 			reply = ""
+		case "дурак":
+			reply = "Сам дурак."
+		case "айди":
+			reply = strconv.FormatInt(chatID, 10)
 		}
 
 		// свитч на обработку комманд, комманда - сообщение, начинающееся с "/"
-		switch update.Message.Command() {
+		switch command {
 		case "start":
 			reply = "Привет."
 		case "getChatID":
-			reply = chatID
+			reply = strconv.FormatInt(chatID, 10)
 		}
-
-		// логируем, от кого какое сообщение пришло
-		log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
 
 		// создаем ответное сообщение и отправляем
 		msg := tgbotapi.NewMessage(chatID, reply)
