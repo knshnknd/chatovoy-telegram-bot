@@ -2,7 +2,7 @@ package main
 
 import (
 	"flag"
-	tgbotapi "github.com/Syfaro/telegram-bot-api"
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	//owm "github.com/briandowns/openweathermap"
 	"log"
 	"os"
@@ -13,7 +13,6 @@ import (
 var (
 	// глобальная переменная, в которой храним токен
 	telegramBotToken string
-	//chatID           int64  = -1001416816634
 )
 
 // Open Weather Map API-key
@@ -46,7 +45,7 @@ func main() {
 	u.Timeout = 60
 
 	// используя конфиг, создаем канал, в который будут прилетать новые сообщения
-	updates, _ := bot.GetUpdatesChan(u)
+	updates := bot.GetUpdatesChan(u)
 
 	// в канал updates прилетают структуры типа Update, вычитываем их и обрабатываем
 	for update := range updates {
