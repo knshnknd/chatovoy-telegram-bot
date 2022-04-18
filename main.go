@@ -3,24 +3,27 @@ package main
 import (
 	"flag"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
-	//owm "github.com/briandowns/openweathermap"
+	owm "github.com/briandowns/openweathermap"
 	"log"
 	"os"
 	"strconv"
 	"strings"
+	"fmt"
 )
 
 var (
 	// глобальная переменная, в которой храним токен
 	telegramBotToken string
+	openweathermapToken string
 )
 
 // Open Weather Map API-key
-var apiKey = os.Getenv("API_WEATHER_KEY")
+// var apiKey = os.Getenv("a3fb0c63cfb5b617e03f3e7d38b753c1")
 
 func init() {
 	// меняем BOT_TOKEN на токен бота от BotFather, в строке принимаем на входе флаг -telegrambottoken
-	flag.StringVar(&telegramBotToken, "telegrambottoken", "BOT_TOKEN", "Telegram Bot Token")
+	flag.StringVar(&telegramBotToken, "telegrambottoken", "5177088641:AAEx4sreMj1o7ZxUqDF3bmD0rIg0X-a6l-U", "Telegram Bot Token")
+	flag.StringVar(&openweathermapToken, "openweathermapToken", "a3fb0c63cfb5b617e03f3e7d38b753c1", "OpenWeatherMap Token")
 	flag.Parse()
 
 	// без флага не запускаем
@@ -70,15 +73,14 @@ func main() {
 			// считаем слова без слова "сколько"
 			reply = "Количество слов в этом сообщении без слова «сколько»: " + strconv.Itoa(len(splitTextFromMessage)-1)
 		case "погода":
-			//w, err := owm.NewCurrent("F", "ru", apiKey)
-			//if err != nil {
-			//	log.Fatalln(err)
-			//}
-			//
-			//пока что для примера - Moscow, а вообще второе слово в сообщении - splitTextFromMessage[1]
-			//w.CurrentByName("Moscow")
-			//строчка не ребаотает :С
-			reply = ""
+			w, err := owm.NewCurrent("C", "ru", openweathermapToken)
+			if err != nil {
+			log.Fatalln(err)
+			}
+
+			w.CurrentByName(splitTextFromMessage[1])
+
+			reply = "Погода:" + w.Name + ": " + fmt.Sprintf("%.1f", w.Main.Temp) + "°C, " + w.Weather[0].Description + ", влажность: " + strconv.Itoa(w.Main.Humidity) + "%"
 		case "дурак":
 			reply = "Сам дурак."
 		case "айди":
