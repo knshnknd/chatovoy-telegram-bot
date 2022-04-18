@@ -22,8 +22,8 @@ var (
 
 func init() {
 	// меняем BOT_TOKEN на токен бота от BotFather, в строке принимаем на входе флаг -telegrambottoken
-	flag.StringVar(&telegramBotToken, "telegrambottoken", "5177088641:AAEx4sreMj1o7ZxUqDF3bmD0rIg0X-a6l-U", "Telegram Bot Token")
-	flag.StringVar(&openweathermapToken, "openweathermapToken", "a3fb0c63cfb5b617e03f3e7d38b753c1", "OpenWeatherMap Token")
+	flag.StringVar(&telegramBotToken, "telegrambottoken", "TOKEN", "Telegram Bot Token")
+	flag.StringVar(&openweathermapToken, "openweathermapToken", "TOKEN", "OpenWeatherMap Token")
 	flag.Parse()
 
 	// без флага не запускаем
