@@ -70,7 +70,7 @@ func main() {
 		switch splitTextFromMessage[0] {
 		case "сколько":
 			// считаем слова без слова "сколько"
-			reply = charactersCount(splitTextFromMessage)
+			reply = wordsCount(splitTextFromMessage)
 		case "погода":
 			reply = requestWeather(splitTextFromMessage)
 		case "дурак":
@@ -95,7 +95,7 @@ func main() {
 	}
 }
 
-func charactersCount(splitTextFromMessage []string) string {
+func wordsCount(splitTextFromMessage []string) string {
 	return "Количество слов в этом сообщении без слова «сколько»: " + strconv.Itoa(len(splitTextFromMessage)-1)
 }
 
