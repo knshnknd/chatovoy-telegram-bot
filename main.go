@@ -57,7 +57,7 @@ func main() {
 		}
 
 		//объявляем переменные которые понадобятся нам для обработки сообщения
-		var reply string = "я ничего не понял"
+		var reply string = "Я ничего не понял."
 		message := update.Message.Text
 		messageLowercase := strings.ToLower(message)
 		chatID := update.Message.Chat.ID
@@ -72,19 +72,24 @@ func main() {
 			// считаем слова без слова "сколько"
 			reply = wordsCount(splitTextFromMessage)
 		case "погода":
-			reply = requestWeather(splitTextFromMessage)
+			if (len(splitTextFromMessage) > 2) {
+        reply = "Больше двух слов не пиши, когда погоду хочешь узнать!"
+        break;
+      } else {
+				reply = requestWeather(splitTextFromMessage)
+	 		}
 		case "дурак":
 			reply = "Сам дурак."
 		case "айди":
 			reply = strconv.FormatInt(chatID, 10)
 		case "спасибо":
-			reply = "Я просто делаю свою работу."
+			reply = "Я просто делаю свою работу. Работать буду по совести. За хозяйство не бойся. Конюшня есть?"
 		}
 
 		// свитч на обработку комманд, комманда - сообщение, начинающееся с "/"
 		switch command {
 		case "start":
-			reply = "Привет."
+			reply = "Привет, меня зовут Кузькой, можно Кузенькой. Я маленький ещё, семь веков всего, восьмой пошёл."
 		case "getChatID":
 			reply = strconv.FormatInt(chatID, 10)
 		}
@@ -110,7 +115,7 @@ func requestWeather(splitTextFromMessage []string) string {
 	} else {
 		w.CurrentByName(splitTextFromMessage[1])
 
-		return fmt.Sprintf("Погода в городе %s: %.1f °C, %s, влажность: %d% ",
+		return fmt.Sprintf("Погода в городе %s: %.1f °C, %s, влажность: %d%",
 			w.Name, w.Main.Temp, w.Weather[0].Description, w.Main.Humidity)
 	}
 }
