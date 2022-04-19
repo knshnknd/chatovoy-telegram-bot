@@ -2,8 +2,9 @@ package main
 
 import (
 	"flag"
+	"fmt"
+	owm "github.com/briandowns/openweathermap"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
-	//owm "github.com/briandowns/openweathermap"
 	"log"
 	"os"
 	"strconv"
@@ -12,15 +13,17 @@ import (
 
 var (
 	// глобальная переменная, в которой храним токен
-	telegramBotToken string
+	telegramBotToken    string
+	openweathermapToken string
 )
 
 // Open Weather Map API-key
-var apiKey = os.Getenv("API_WEATHER_KEY")
+// var apiKey = os.Getenv("a3fb0c63cfb5b617e03f3e7d38b753c1")
 
 func init() {
 	// меняем BOT_TOKEN на токен бота от BotFather, в строке принимаем на входе флаг -telegrambottoken
-	flag.StringVar(&telegramBotToken, "telegrambottoken", "BOT_TOKEN", "Telegram Bot Token")
+	flag.StringVar(&telegramBotToken, "telegrambottoken", "", "Telegram Bot Token")
+	flag.StringVar(&openweathermapToken, "openweathermapToken", "", "OpenWeatherMap Token")
 	flag.Parse()
 
 	// без флага не запускаем
@@ -49,7 +52,6 @@ func main() {
 
 	// в канал updates прилетают структуры типа Update, вычитываем их и обрабатываем
 	for update := range updates {
-
 		if update.Message == nil {
 			continue
 		}
@@ -68,21 +70,15 @@ func main() {
 		switch splitTextFromMessage[0] {
 		case "сколько":
 			// считаем слова без слова "сколько"
-			reply = "Количество слов в этом сообщении без слова «сколько»: " + strconv.Itoa(len(splitTextFromMessage)-1)
+			reply = wordsCount(splitTextFromMessage)
 		case "погода":
-			//w, err := owm.NewCurrent("F", "ru", apiKey)
-			//if err != nil {
-			//	log.Fatalln(err)
-			//}
-			//
-			//пока что для примера - Moscow, а вообще второе слово в сообщении - splitTextFromMessage[1]
-			//w.CurrentByName("Moscow")
-			//строчка не ребаотает :С
-			reply = ""
+			reply = requestWeather(splitTextFromMessage)
 		case "дурак":
 			reply = "Сам дурак."
 		case "айди":
 			reply = strconv.FormatInt(chatID, 10)
+		case "спасибо":
+			reply = "Я просто делаю свою работу."
 		}
 
 		// свитч на обработку комманд, комманда - сообщение, начинающееся с "/"
@@ -96,5 +92,28 @@ func main() {
 		// создаем ответное сообщение и отправляем
 		msg := tgbotapi.NewMessage(chatID, reply)
 		bot.Send(msg)
+	}
+}
+
+func wordsCount(splitTextFromMessage []string) string {
+	return "Количество слов в этом сообщении без слова «сколько»: " + strconv.Itoa(len(splitTextFromMessage)-1)
+}
+
+func requestWeather(splitTextFromMessage []string) string {
+	w, err := owm.NewCurrent("C", "ru", openweathermapToken)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	if splitTextFromMessage[1] == "балкон" {
+		return "На балконе как всегда тепло и уютно."
+	} else {
+		w.CurrentByName(splitTextFromMessage[1])
+
+		return "Погода: " + w.Name + ": " +
+			fmt.Sprintf("%.1f", w.Main.Temp) +
+			"°C, " +
+			w.Weather[0].Description + ", влажность: " +
+			strconv.Itoa(w.Main.Humidity) + "%"
 	}
 }
