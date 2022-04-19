@@ -110,10 +110,7 @@ func requestWeather(splitTextFromMessage []string) string {
 	} else {
 		w.CurrentByName(splitTextFromMessage[1])
 
-		return "Погода: " + w.Name + ": " +
-			fmt.Sprintf("%.1f", w.Main.Temp) +
-			"°C, " +
-			w.Weather[0].Description + ", влажность: " +
-			strconv.Itoa(w.Main.Humidity) + "%"
+		return fmt.Sprintf("Погода в городе %s: %.1f °C, %s, влажность: %d% ",
+			w.Name, w.Main.Temp, w.Weather[0].Description, w.Main.Humidity)
 	}
 }
