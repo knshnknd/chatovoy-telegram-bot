@@ -22,8 +22,8 @@ var (
 
 func init() {
 	// меняем BOT_TOKEN на токен бота от BotFather, в строке принимаем на входе флаг -telegrambottoken
-	flag.StringVar(&telegramBotToken, "telegrambottoken", "", "Telegram Bot Token")
-	flag.StringVar(&openweathermapToken, "openweathermapToken", "", "OpenWeatherMap Token")
+	flag.StringVar(&telegramBotToken, "telegrambottoken", "5177088641:AAE6ToDyc5Y_MdS9bmNB46DOrJ_09TMmM74", "Telegram Bot Token")
+	flag.StringVar(&openweathermapToken, "openweathermapToken", "d508ab54bc88ed68b7ba598b08872ac3", "OpenWeatherMap Token")
 	flag.Parse()
 
 	// без флага не запускаем
@@ -115,7 +115,7 @@ func requestWeather(splitTextFromMessage []string) string {
 	} else {
 		w.CurrentByName(splitTextFromMessage[1])
 
-		return fmt.Sprintf("Погода в городе %s: %.1f °C, %s, влажность: %d%",
+		return fmt.Sprintf("Погода в городе %s: %.1f °C, %s, влажность: %d%%",
 			w.Name, w.Main.Temp, w.Weather[0].Description, w.Main.Humidity)
 	}
 }
