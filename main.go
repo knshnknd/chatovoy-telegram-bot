@@ -5,7 +5,9 @@ import (
 	"fmt"
 	owm "github.com/briandowns/openweathermap"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"io/ioutil"
 	"log"
+	"math/rand"
 	"os"
 	"strconv"
 	"strings"
@@ -68,16 +70,17 @@ func main() {
 		log.Printf("[%s] %s", update.Message.From.UserName, message)
 
 		switch splitTextFromMessage[0] {
+		case "покажись":
+			reply = showYourself(bot, chatID)
 		case "сколько":
 			// считаем слова без слова "сколько"
 			reply = wordsCount(splitTextFromMessage)
 		case "погода":
-			if (len(splitTextFromMessage) > 2) {
-        reply = "Больше двух слов не пиши, когда погоду хочешь узнать!"
-        break;
-      } else {
+			if len(splitTextFromMessage) > 2 {
+				reply = "Больше двух слов не пиши, когда погоду хочешь узнать!"
+			} else {
 				reply = requestWeather(splitTextFromMessage)
-	 		}
+			}
 		case "дурак":
 			reply = "Сам дурак."
 		case "айди":
@@ -118,4 +121,32 @@ func requestWeather(splitTextFromMessage []string) string {
 		return fmt.Sprintf("Погода в городе %s: %.1f °C, %s, влажность: %d%%",
 			w.Name, w.Main.Temp, w.Weather[0].Description, w.Main.Humidity)
 	}
+}
+
+func showYourself(bot *tgbotapi.BotAPI, chatID int64) string {
+	reply := "туточки я"
+	sendPhoto(bot, chatID, generatePhotoName())
+
+	return reply
+}
+
+func generatePhotoName() string {
+	return fmt.Sprintf("kuzya%d", rand.Intn(7))
+}
+
+func sendPhoto(bot *tgbotapi.BotAPI, chatID int64, photoName string) {
+	photoBytes, err := ioutil.ReadFile(makePhotoPath(photoName))
+
+	if err != nil {
+		panic(err)
+	}
+	photoFileBytes := tgbotapi.FileBytes{
+		Name:  photoName,
+		Bytes: photoBytes,
+	}
+	bot.Send(tgbotapi.NewPhoto(chatID, photoFileBytes))
+}
+
+func makePhotoPath(photoName string) string {
+	return fmt.Sprintf("resources/%s.jpg", photoName)
 }
