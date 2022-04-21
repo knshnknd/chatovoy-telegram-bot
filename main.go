@@ -1,6 +1,8 @@
 package main
 
 import (
+
+
 	"flag"
 	"fmt"
 	owm "github.com/briandowns/openweathermap"
@@ -11,6 +13,8 @@ import (
 	"os"
 	"strconv"
 	"strings"
+
+
 )
 
 var (
@@ -95,6 +99,8 @@ func main() {
 			reply = "Привет, меня зовут Кузькой, можно Кузенькой. Я маленький ещё, семь веков всего, восьмой пошёл."
 		case "getChatID":
 			reply = strconv.FormatInt(chatID, 10)
+		case "currency":
+			reply = getCurrency()
 		}
 
 		// создаем ответное сообщение и отправляем
