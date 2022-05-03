@@ -2,7 +2,6 @@ package main
 
 import (
 
-
 	"flag"
 	"fmt"
 	owm "github.com/briandowns/openweathermap"
@@ -13,7 +12,6 @@ import (
 	"os"
 	"strconv"
 	"strings"
-
 
 )
 
@@ -101,6 +99,10 @@ func main() {
 			reply = strconv.FormatInt(chatID, 10)
 		case "currency":
 			reply = getCurrency()
+		case "time":
+			reply = getTime()
+		case "random":
+			reply = getRandomAnswer()
 		}
 
 		// создаем ответное сообщение и отправляем
@@ -122,10 +124,30 @@ func requestWeather(splitTextFromMessage []string) string {
 	if splitTextFromMessage[1] == "балкон" {
 		return "На балконе как всегда тепло и уютно."
 	} else {
-		w.CurrentByName(splitTextFromMessage[1])
+	err = w.CurrentByName(splitTextFromMessage[1])
 
-		return fmt.Sprintf("Погода в городе %s: %.1f °C, %s, влажность: %d%%",
-			w.Name, w.Main.Temp, w.Weather[0].Description, w.Main.Humidity)
+	if err != nil {
+		return "Ошибка!"
+	}
+
+	currentWeather := fmt.Sprintf("Погода в городе %s: %.1f °C, %s, влажность: %d%%",
+		w.Name, w.Main.Temp, w.Weather[0].Description, w.Main.Humidity)
+
+	// ПОТОМ СДЕЛАЮ В ОТДЕЛЬНЫЙ ФАЙЛ ВСЮ ПОГОДУ!!!
+	f, err := owm.NewForecast("5", "C", "ru", openweathermapToken)
+	if err != nil {
+			log.Fatalln(err)
+	}
+
+	err = f.DailyByName(splitTextFromMessage[1], 5)
+
+	if err != nil {
+		return "Ошибка!"
+	}
+
+	forecastWeather := "Прогноз на 5 дней в разработке..."
+
+	return currentWeather + "\n\n" + forecastWeather
 	}
 }
 
