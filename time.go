@@ -5,11 +5,6 @@ import (
 	"time"
 )
 
-var (
-	fullFormat  = "Monday, 2 January 2006 15:04"
-	shortFormat = "3:04 PM"
-)
-
 func getTime() string {
 	timeTbilisi := getTimeForRegion("Asia/Tbilisi", "Tbilisi")
 	timeMoscow := getTimeForRegion("Europe/Moscow", "Moscow")
@@ -21,8 +16,8 @@ func getTime() string {
 
 func getTimeForRegion(locationName, name string) string {
 	location, _ := time.LoadLocation(locationName)
-	currentLocationTime := time.Now().In(location)
+	currentTime := time.Now().In(location)
 
-	return fmt.Sprintf("%s: %s or %s",
-		name, currentLocationTime.Format(fullFormat), currentLocationTime.Format(shortFormat))
+	return fmt.Sprintf("%s: %s or %s", name,
+		currentTime.Format("Monday, 2 January 2006 15:04"), currentTime.Format("3:04 PM"))
 }
