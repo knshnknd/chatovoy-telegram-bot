@@ -16,15 +16,13 @@ func getTime() string {
 	timeKrasnoyarsk := getTimeForRegion("Asia/Krasnoyarsk", "Krasnoyarsk")
 	timeBeijing := getTimeForRegion("Asia/Shanghai", "Shanghai")
 
-	return timeTbilisi + "\n" + timeMoscow + "\n" + timeKrasnoyarsk + "\n" + timeBeijing
+	return timeMoscow + "\n" + timeTbilisi + "\n" + timeKrasnoyarsk + "\n" + timeBeijing
 }
 
 func getTimeForRegion(locationName, name string) string {
 	location, _ := time.LoadLocation(locationName)
 	currentLocationTime := time.Now().In(location)
 
-	localTimeMessage := fmt.Sprintf("%s: %s or %s",
+	return fmt.Sprintf("%s: %s or %s",
 		name, currentLocationTime.Format(fullFormat), currentLocationTime.Format(shortFormat))
-
-	return localTimeMessage
 }
