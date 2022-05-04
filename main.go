@@ -140,6 +140,7 @@ func showWeather(splitTextFromMessage []string) string {
 func isMessageForBot(splitTextFromMessage []string) bool {
 	//это тупа имитация HashSet из Java, потому что по-дефолту в Go нет множеств
 	chatovoyNames := map[string]bool{
+		"чтв":          true,
 		"чатовой":      true,
 		"@chatovoybot": true,
 	}
