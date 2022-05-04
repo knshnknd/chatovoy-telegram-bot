@@ -1,7 +1,6 @@
 package main
 
 import (
-
 	"flag"
 	"fmt"
 	owm "github.com/briandowns/openweathermap"
@@ -10,9 +9,7 @@ import (
 	"log"
 	"math/rand"
 	"os"
-	"strconv"
 	"strings"
-
 )
 
 var (
@@ -60,94 +57,128 @@ func main() {
 			continue
 		}
 
-		//объявляем переменные которые понадобятся нам для обработки сообщения
-		var reply string = "Я ничего не понял."
-		message := update.Message.Text
-		messageLowercase := strings.ToLower(message)
-		chatID := update.Message.Chat.ID
-		splitTextFromMessage := strings.Split(messageLowercase, " ")
-		command := update.Message.Command()
+		logUpdate(update)
 
-		// логируем, от кого какое сообщение пришло
-		log.Printf("[%s] %s", update.Message.From.UserName, message)
-
-		switch splitTextFromMessage[0] {
-		case "покажись":
-			reply = showYourself(bot, chatID)
-		case "сколько":
-			// считаем слова без слова "сколько"
-			reply = wordsCount(splitTextFromMessage)
-		case "погода":
-			if len(splitTextFromMessage) > 2 {
-				reply = "Больше двух слов не пиши, когда погоду хочешь узнать!"
-			} else {
-				reply = requestWeather(splitTextFromMessage)
-			}
-		case "дурак":
-			reply = "Сам дурак."
-		case "айди":
-			reply = strconv.FormatInt(chatID, 10)
-		case "спасибо":
-			reply = "Я просто делаю свою работу. Работать буду по совести. За хозяйство не бойся. Конюшня есть?"
+		reply := ""
+		if update.Message.IsCommand() {
+			reply = processCommand(update)
+		} else {
+			reply = processMessage(update, bot)
 		}
 
-		// свитч на обработку комманд, комманда - сообщение, начинающееся с "/"
-		switch command {
-		case "start":
-			reply = "Привет, меня зовут Кузькой, можно Кузенькой. Я маленький ещё, семь веков всего, восьмой пошёл."
-		case "getChatID":
-			reply = strconv.FormatInt(chatID, 10)
-		case "currency":
-			reply = getCurrency()
-		case "time":
-			reply = getTime()
-		case "random":
-			reply = getRandomAnswer()
-		}
-
-		// создаем ответное сообщение и отправляем
-		msg := tgbotapi.NewMessage(chatID, reply)
-		bot.Send(msg)
+		sendReplyToUpdate(update, reply, bot)
 	}
 }
 
-func wordsCount(splitTextFromMessage []string) string {
-	return "Количество слов в этом сообщении без слова «сколько»: " + strconv.Itoa(len(splitTextFromMessage)-1)
+func logUpdate(update tgbotapi.Update) {
+	message := update.Message.Text
+	userName := update.Message.From.UserName
+	chatID := update.Message.Chat.ID
+	chatTitle := update.Message.Chat.Title
+
+	log.Printf("[%s] sent message: \"%s\" to chat: \"%s\"[%d]", userName, message, chatTitle, chatID)
 }
 
-func requestWeather(splitTextFromMessage []string) string {
+func processCommand(update tgbotapi.Update) string {
+	command := update.Message.Command()
+	reply := ""
+
+	switch command {
+	case "start":
+		reply = "Привет, меня зовут Кузькой, можно Кузенькой. Я маленький ещё, семь веков всего, восьмой пошёл."
+	case "currency":
+		reply = getCurrency()
+	case "time":
+		reply = getTime()
+	}
+	return reply
+}
+
+func processMessage(update tgbotapi.Update, bot *tgbotapi.BotAPI) string {
+	message := update.Message.Text
+	messageLowercase := strings.ToLower(message)
+	chatID := update.Message.Chat.ID
+	splitTextFromMessage := strings.Split(messageLowercase, " ")
+	reply := ""
+
+	if isMessageForBot(splitTextFromMessage) {
+		switch splitTextFromMessage[1] {
+		case "покажись":
+			reply = showYourself(bot, chatID)
+		case "ответь":
+			reply = getRandomAnswer()
+		case "погода":
+			reply = showWeather(splitTextFromMessage)
+		case "дурак":
+			reply = "Сам дурак."
+		case "спасибо":
+			reply = "Я просто делаю свою работу. Работать буду по совести. За хозяйство не бойся. Конюшня есть?"
+		}
+	}
+
+	return reply
+}
+
+func sendReplyToUpdate(update tgbotapi.Update, reply string, bot *tgbotapi.BotAPI) {
+	chatID := update.Message.Chat.ID
+	msg := tgbotapi.NewMessage(chatID, reply)
+	bot.Send(msg)
+}
+
+func showWeather(splitTextFromMessage []string) string {
+	reply := ""
+
+	if len(splitTextFromMessage) > 3 {
+		reply = "Больше двух слов не пиши, когда погоду хочешь узнать!"
+	} else {
+		place := splitTextFromMessage[2]
+		reply = requestWeatherByPlace(place)
+	}
+	return reply
+}
+
+func isMessageForBot(splitTextFromMessage []string) bool {
+	//это тупа имитация HashSet из Java, потому что по-дефолту в Go нет множеств
+	chatovoyNames := map[string]bool{
+		"чатовой":      true,
+		"@chatovoybot": true,
+	}
+	return chatovoyNames[splitTextFromMessage[0]]
+}
+
+func requestWeatherByPlace(place string) string {
 	w, err := owm.NewCurrent("C", "ru", openweathermapToken)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	if splitTextFromMessage[1] == "балкон" {
+	if place == "балкон" {
 		return "На балконе как всегда тепло и уютно."
 	} else {
-	err = w.CurrentByName(splitTextFromMessage[1])
+		err = w.CurrentByName(place)
 
-	if err != nil {
-		return "Ошибка!"
-	}
+		if err != nil {
+			return "Ошибка!"
+		}
 
-	currentWeather := fmt.Sprintf("Погода в городе %s: %.1f °C, %s, влажность: %d%%",
-		w.Name, w.Main.Temp, w.Weather[0].Description, w.Main.Humidity)
+		currentWeather := fmt.Sprintf("Погода в городе %s: %.1f °C, %s, влажность: %d%%",
+			w.Name, w.Main.Temp, w.Weather[0].Description, w.Main.Humidity)
 
-	// ПОТОМ СДЕЛАЮ В ОТДЕЛЬНЫЙ ФАЙЛ ВСЮ ПОГОДУ!!!
-	f, err := owm.NewForecast("5", "C", "ru", openweathermapToken)
-	if err != nil {
+		// ПОТОМ СДЕЛАЮ В ОТДЕЛЬНЫЙ ФАЙЛ ВСЮ ПОГОДУ!!!
+		f, err := owm.NewForecast("5", "C", "ru", openweathermapToken)
+		if err != nil {
 			log.Fatalln(err)
-	}
+		}
 
-	err = f.DailyByName(splitTextFromMessage[1], 5)
+		err = f.DailyByName(place, 5)
 
-	if err != nil {
-		return "Ошибка!"
-	}
+		if err != nil {
+			return "Ошибка!"
+		}
 
-	forecastWeather := "Прогноз на 5 дней в разработке..."
+		forecastWeather := "Прогноз на 5 дней в разработке..."
 
-	return currentWeather + "\n\n" + forecastWeather
+		return currentWeather + "\n\n" + forecastWeather
 	}
 }
 
