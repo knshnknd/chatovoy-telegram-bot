@@ -1,28 +1,23 @@
 package main
 
 import (
-  "time"
+	"fmt"
+	"time"
 )
 
 func getTime() string {
-  today := time.Now()
-  timeNow :=  "Tbilisi: " + today.Format("Monday, 2 January 2006 15:04") + " or " + today.Format("3:04 PM")
+	timeTbilisi := getTimeForRegion("Asia/Tbilisi", "Tbilisi")
+	timeMoscow := getTimeForRegion("Europe/Moscow", "Moscow")
+	timeKrasnoyarsk := getTimeForRegion("Asia/Krasnoyarsk", "Krasnoyarsk")
+	timeBeijing := getTimeForRegion("Asia/Shanghai", "Shanghai")
 
-  mos, _ := time.LoadLocation("Europe/Moscow")
+	return timeMoscow + "\n" + timeTbilisi + "\n" + timeKrasnoyarsk + "\n" + timeBeijing
+}
 
-  tMoscow := time.Now().In(mos)
-  timeMoscow :=  "Moscow: " + tMoscow.Format("Monday, 2 January 2006 15:04") + " or " + tMoscow.Format("3:04 PM")
+func getTimeForRegion(locationName, name string) string {
+	location, _ := time.LoadLocation(locationName)
+	currentTime := time.Now().In(location)
 
-  krsk, _ := time.LoadLocation("Asia/Krasnoyarsk")
-
-  tKrsk := time.Now().In(krsk)
-  timeKrsk :=  "Krasnoyarsk: " + tKrsk.Format("Monday, 2 January 2006 15:04") + " or " + tKrsk.Format("3:04 PM")
-
-  beijing, _ := time.LoadLocation("Asia/Shanghai")
-
-  tBejing := time.Now().In(beijing)
-  timeBeijing :=  "Shanghai: " + tBejing.Format("Monday, 2 January 2006 15:04") + " or " + tBejing.Format("3:04 PM")
-  str := timeNow + "\n" + timeMoscow + "\n" + timeKrsk + "\n" + timeBeijing
-
-  return str
+	return fmt.Sprintf("%s: %s or %s", name,
+		currentTime.Format("Monday, 2 January 2006 15:04"), currentTime.Format("3:04 PM"))
 }

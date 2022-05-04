@@ -1,28 +1,50 @@
 package main
 
 import (
-
 	"flag"
 	"fmt"
-	owm "github.com/briandowns/openweathermap"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
-	"io/ioutil"
 	"log"
-	"math/rand"
 	"os"
-	"strconv"
-	"strings"
-
 )
 
 var (
 	// глобальная переменная, в которой храним токен
 	telegramBotToken    string
 	openweathermapToken string
+
+	skills = []Skill{
+		{name: "расскажись", description: "ну вы уже поняли как оно работает"},
+		{name: "покажись", description: "явлюсь к вам во всей своей красе"},
+		{name: "ответь", description: "с вас вопрос с меня ответ"},
+		{name: "погода", description: "выгляну в окно за вас"},
+		{name: "дурак", description: "даже не думай"},
+		{name: "спасибо", description: "вежливость у нас в почёте"},
+	}
+
+	existingSkills = map[string]bool{
+		"покажись": true,
+		"ответь":   true,
+		"погода":   true,
+		"дурак":    true,
+		"спасибо":  true,
+	}
+
+	chatovoyNames = map[string]bool{
+		"чтв":              true,
+		"чатовой":          true,
+		"@chatovoybot":     true,
+		"солнышко заинька": true,
+	}
 )
 
-// Open Weather Map API-key
-// var apiKey = os.Getenv("a3fb0c63cfb5b617e03f3e7d38b753c1")
+const (
+	testChatId             = -790845206
+	govnosoftChatId        = -755317706
+	numberOfKuzyasPictures = 7
+	emptyLine              = "\n\n"
+	greetings              = "Привет, меня зовут Кузькой, можно Кузенькой. Я маленький ещё, семь веков всего, восьмой пошёл."
+)
 
 func init() {
 	// меняем BOT_TOKEN на токен бота от BotFather, в строке принимаем на входе флаг -telegrambottoken
@@ -60,95 +82,91 @@ func main() {
 			continue
 		}
 
-		//объявляем переменные которые понадобятся нам для обработки сообщения
-		var reply string = "Я ничего не понял."
-		message := update.Message.Text
-		messageLowercase := strings.ToLower(message)
-		chatID := update.Message.Chat.ID
-		splitTextFromMessage := strings.Split(messageLowercase, " ")
-		command := update.Message.Command()
+		logUpdate(update)
 
-		// логируем, от кого какое сообщение пришло
-		log.Printf("[%s] %s", update.Message.From.UserName, message)
+		reply := ""
+		if update.Message.IsCommand() {
+			reply = processCommand(update)
+		} else {
+			reply = processMessage(update, bot)
+		}
 
-		switch splitTextFromMessage[0] {
+		sendReplyToUpdate(update, reply, bot)
+	}
+}
+
+func logUpdate(update tgbotapi.Update) {
+	message := update.Message.Text
+	userName := update.Message.From.UserName
+	chatID := update.Message.Chat.ID
+	chatTitle := update.Message.Chat.Title
+
+	log.Printf("[%s] sent message: \"%s\" to chat: \"%s\"[%d]", userName, message, chatTitle, chatID)
+}
+
+func processCommand(update tgbotapi.Update) string {
+	command := update.Message.Command()
+	reply := ""
+
+	switch command {
+	case "start":
+		reply = greetings
+	case "currency":
+		reply = getCurrency()
+	case "time":
+		reply = getTime()
+	}
+	return reply
+}
+
+func processMessage(update tgbotapi.Update, bot *tgbotapi.BotAPI) string {
+	message := prepareMessage(update)
+	reply := ""
+
+	if message.botMention == "солнышко заинька" {
+		sendReplyToUpdate(update, "😳\U0001F97A😳\U0001F97A😳\U0001F97A", bot)
+	}
+
+	if isMessageForBot(message.botMention) {
+		switch message.skillName {
+		case "расскажись":
+			reply = introduceYourself()
 		case "покажись":
-			reply = showYourself(bot, chatID)
-		case "сколько":
-			// считаем слова без слова "сколько"
-			reply = wordsCount(splitTextFromMessage)
+			reply = showYourself(bot, message.fromChat)
+		case "ответь":
+			reply = getRandomAnswer()
 		case "погода":
-			if len(splitTextFromMessage) > 2 {
-				reply = "Больше двух слов не пиши, когда погоду хочешь узнать!"
-			} else {
-				reply = requestWeather(splitTextFromMessage)
-			}
+			reply = showWeather(message.skillParameter)
 		case "дурак":
 			reply = "Сам дурак."
-		case "айди":
-			reply = strconv.FormatInt(chatID, 10)
 		case "спасибо":
 			reply = "Я просто делаю свою работу. Работать буду по совести. За хозяйство не бойся. Конюшня есть?"
 		}
-
-		// свитч на обработку комманд, комманда - сообщение, начинающееся с "/"
-		switch command {
-		case "start":
-			reply = "Привет, меня зовут Кузькой, можно Кузенькой. Я маленький ещё, семь веков всего, восьмой пошёл."
-		case "getChatID":
-			reply = strconv.FormatInt(chatID, 10)
-		case "currency":
-			reply = getCurrency()
-		case "time":
-			reply = getTime()
-		case "random":
-			reply = getRandomAnswer()
-		}
-
-		// создаем ответное сообщение и отправляем
-		msg := tgbotapi.NewMessage(chatID, reply)
-		bot.Send(msg)
 	}
+
+	return reply
 }
 
-func wordsCount(splitTextFromMessage []string) string {
-	return "Количество слов в этом сообщении без слова «сколько»: " + strconv.Itoa(len(splitTextFromMessage)-1)
+func sendReplyToUpdate(update tgbotapi.Update, reply string, bot *tgbotapi.BotAPI) {
+	chatID := update.Message.Chat.ID
+	msg := tgbotapi.NewMessage(chatID, reply)
+	bot.Send(msg)
 }
 
-func requestWeather(splitTextFromMessage []string) string {
-	w, err := owm.NewCurrent("C", "ru", openweathermapToken)
-	if err != nil {
-		log.Fatalln(err)
+func introduceYourself() string {
+	skillsIntroduction := "а вот что я умею:"
+
+	skillsText := ""
+
+	for _, elem := range skills {
+		skillsText += fmt.Sprintf("%s -> %s\n", elem.name, elem.description)
 	}
 
-	if splitTextFromMessage[1] == "балкон" {
-		return "На балконе как всегда тепло и уютно."
-	} else {
-	err = w.CurrentByName(splitTextFromMessage[1])
+	return greetings + emptyLine + skillsIntroduction + emptyLine + skillsText
+}
 
-	if err != nil {
-		return "Ошибка!"
-	}
-
-	currentWeather := fmt.Sprintf("Погода в городе %s: %.1f °C, %s, влажность: %d%%",
-		w.Name, w.Main.Temp, w.Weather[0].Description, w.Main.Humidity)
-
-	// ПОТОМ СДЕЛАЮ В ОТДЕЛЬНЫЙ ФАЙЛ ВСЮ ПОГОДУ!!!
-	f, err := owm.NewForecast("5", "C", "ru", openweathermapToken)
-	if err != nil {
-			log.Fatalln(err)
-	}
-
-	err = f.DailyByName(splitTextFromMessage[1], 5)
-
-	if err != nil {
-		return "Ошибка!"
-	}
-
-	forecastWeather := "Прогноз на 5 дней в разработке..."
-
-	return currentWeather + "\n\n" + forecastWeather
-	}
+func showWeather(place string) string {
+	return requestWeatherByPlace(place)
 }
 
 func showYourself(bot *tgbotapi.BotAPI, chatID int64) string {
@@ -158,23 +176,6 @@ func showYourself(bot *tgbotapi.BotAPI, chatID int64) string {
 	return reply
 }
 
-func generatePhotoName() string {
-	return fmt.Sprintf("kuzya%d", rand.Intn(7))
-}
-
-func sendPhoto(bot *tgbotapi.BotAPI, chatID int64, photoName string) {
-	photoBytes, err := ioutil.ReadFile(makePhotoPath(photoName))
-
-	if err != nil {
-		panic(err)
-	}
-	photoFileBytes := tgbotapi.FileBytes{
-		Name:  photoName,
-		Bytes: photoBytes,
-	}
-	bot.Send(tgbotapi.NewPhoto(chatID, photoFileBytes))
-}
-
-func makePhotoPath(photoName string) string {
-	return fmt.Sprintf("resources/%s.jpg", photoName)
+func isMessageForBot(name string) bool {
+	return chatovoyNames[name]
 }
