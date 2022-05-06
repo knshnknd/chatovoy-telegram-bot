@@ -1,4 +1,4 @@
-module awesomeProject
+module chatovoy
 
 go 1.18
 
