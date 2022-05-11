@@ -5,63 +5,59 @@ import (
 	"strings"
 )
 
-func prepareMessage(update tgbotapi.Update) PreparedMessage {
+func prepareMessage(update tgbotapi.Update, bot *tgbotapi.BotAPI) PreparedMessage {
 	message := update.Message.Text
 	messageLowercase := strings.ToLower(message)
 	chatID := update.Message.Chat.ID
 	splitTextFromMessage := strings.Split(messageLowercase, " ")
+	isReplyForBotMessage := isReplyForBot(update, bot)
 
-	botMention, endOfBotMention := parseName(splitTextFromMessage)
-	skillName, endOfSkillName := parseSkill(splitTextFromMessage, endOfBotMention+1)
-	parameter := parseParam(splitTextFromMessage, endOfSkillName+1)
+	botMention := stringContainsInMap(splitTextFromMessage, chatovoyNames, 0)
+	botMentionLength := len(strings.Fields(botMention))
+
+	skillName := stringContainsInMap(splitTextFromMessage, existingSkills, botMentionLength)
+	skillNameLength := len(strings.Fields(skillName))
+
+	parameter := parseParam(splitTextFromMessage, skillNameLength+botMentionLength)
 
 	return PreparedMessage{
 		chatID,
 		message,
 		messageLowercase,
 		splitTextFromMessage,
+		isReplyForBotMessage,
 		botMention,
 		skillName,
 		parameter,
 	}
 }
 
-func parseName(splitTextFromMessage []string) (string, int) {
-	name := ""
-	nameIndexEnd := 0
-	for index, element := range splitTextFromMessage {
-		if name != "" {
-			name += " "
-		}
-
-		name += element
-		if chatovoyNames[name] {
-			nameIndexEnd = index
-			return name, nameIndexEnd
-		}
+func isReplyForBot(update tgbotapi.Update, bot *tgbotapi.BotAPI) bool {
+	reply := update.Message.ReplyToMessage
+	if reply == nil || reply.From == nil {
+		return false
 	}
 
-	return name, nameIndexEnd
+	return reply.From.ID == bot.Self.ID
 }
 
-func parseSkill(splitTextFromMessage []string, startIndex int) (string, int) {
-	skill := ""
-	nameIndexEnd := startIndex
+func stringContainsInMap(splitTextFromMessage []string, arrayOfResults map[string]bool, startIndex int) string {
+	result := ""
+	currentString := ""
 	if startIndex < len(splitTextFromMessage) {
 		for i := startIndex; i < len(splitTextFromMessage); i++ {
-			if skill != "" {
-				skill += " "
+			if currentString != "" {
+				currentString += " "
 			}
 
-			skill += splitTextFromMessage[i]
-			if existingSkills[skill] {
-				nameIndexEnd = i
-				return skill, nameIndexEnd
+			currentString += splitTextFromMessage[i]
+			if arrayOfResults[currentString] {
+				result = currentString
 			}
 		}
 	}
 
-	return skill, nameIndexEnd
+	return result
 }
 
 func parseParam(splitTextFromMessage []string, startIndex int) string {
@@ -84,10 +80,11 @@ type Skill struct {
 }
 
 type PreparedMessage struct {
-	fromChat         int64
-	originalMessage  string
-	lowercaseMessage string
-	splitMessage     []string
+	fromChat             int64
+	originalMessage      string
+	lowercaseMessage     string
+	splitMessage         []string
+	isReplyForBotMessage bool
 
 	botMention     string
 	skillName      string

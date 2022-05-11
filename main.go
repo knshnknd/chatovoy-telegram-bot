@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"io/ioutil"
 	"log"
 	"os"
 )
@@ -39,11 +40,15 @@ var (
 )
 
 const (
-	testChatId             = -790845206
-	govnosoftChatId        = -755317706
+	testChatId      = -790845206
+	govnosoftChatId = -755317706
+	balconyChatId   = -1001416816634
+
 	numberOfKuzyasPictures = 7
-	emptyLine              = "\n\n"
-	greetings              = "Привет, меня зовут Кузькой, можно Кузенькой. Я маленький ещё, семь веков всего, восьмой пошёл."
+
+	emptyLine = "\n\n"
+	greetings = "Привет, меня зовут Кузькой, можно Кузенькой. Я маленький ещё, семь веков всего, восьмой пошёл."
+	cuteness  = "😳\U0001F97A😳\U0001F97A😳\U0001F97A"
 )
 
 func init() {
@@ -91,7 +96,7 @@ func main() {
 			reply = processMessage(update, bot)
 		}
 
-		sendReplyToUpdate(update, reply, bot)
+		sendMessage(bot, update.Message.Chat.ID, reply)
 	}
 }
 
@@ -120,14 +125,10 @@ func processCommand(update tgbotapi.Update) string {
 }
 
 func processMessage(update tgbotapi.Update, bot *tgbotapi.BotAPI) string {
-	message := prepareMessage(update)
+	message := prepareMessage(update, bot)
 	reply := ""
 
-	if message.botMention == "солнышко заинька" {
-		sendReplyToUpdate(update, "😳\U0001F97A😳\U0001F97A😳\U0001F97A", bot)
-	}
-
-	if isMessageForBot(message.botMention) {
+	if isMessageForBot(message) {
 		switch message.skillName {
 		case "расскажись":
 			reply = introduceYourself()
@@ -144,12 +145,15 @@ func processMessage(update tgbotapi.Update, bot *tgbotapi.BotAPI) string {
 		}
 	}
 
+	if message.botMention == "солнышко заинька" {
+		reply += " " + cuteness
+	}
+
 	return reply
 }
 
-func sendReplyToUpdate(update tgbotapi.Update, reply string, bot *tgbotapi.BotAPI) {
-	chatID := update.Message.Chat.ID
-	msg := tgbotapi.NewMessage(chatID, reply)
+func sendMessage(bot *tgbotapi.BotAPI, chatID int64, message string) {
+	msg := tgbotapi.NewMessage(chatID, message)
 	bot.Send(msg)
 }
 
@@ -171,11 +175,18 @@ func showWeather(place string) string {
 
 func showYourself(bot *tgbotapi.BotAPI, chatID int64) string {
 	reply := "туточки я"
-	sendPhoto(bot, chatID, generatePhotoName())
 
-	return reply
+	photoName := generatePhotoName()
+	photoBytes, err := ioutil.ReadFile(makePhotoPath(photoName))
+
+	if err != nil {
+		return "Ой! Стесняюсь я"
+	} else {
+		sendPhoto(bot, chatID, photoBytes, photoName)
+		return reply
+	}
 }
 
-func isMessageForBot(name string) bool {
-	return chatovoyNames[name]
+func isMessageForBot(message PreparedMessage) bool {
+	return chatovoyNames[message.botMention] || existingSkills[message.skillName] && message.isReplyForBotMessage
 }
