@@ -1,0 +1,4 @@
+github.com/briandowns/openweathermap v0.16.0 h1:js8THhUE4nVYbpedSCs0E5vxYzxkkOLtxrOFh9xed8c=
+github.com/briandowns/openweathermap v0.16.0/go.mod h1:0GLnknqicWxXnGi1IqoOaZIw+kIe5hkt+YM5WY3j8+0=
+github.com/go-telegram-bot-api/telegram-bot-api/v5 v5.5.1 h1:wG8n/XJQ07TmjbITcGiUaOtXxdrINDz1b0J1w0SzqDc=
+github.com/go-telegram-bot-api/telegram-bot-api/v5 v5.5.1/go.mod h1:A2S0CWkNylc2phvKXWBBdD3K0iGnDBGbzRpISP2zBl8=
