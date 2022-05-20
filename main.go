@@ -47,8 +47,13 @@ const (
 	numberOfKuzyasPictures = 7
 
 	emptyLine = "\n\n"
-	greetings = "Привет, меня зовут Кузькой, можно Кузенькой. Я маленький ещё, семь веков всего, восьмой пошёл."
-	cuteness  = "😳\U0001F97A😳\U0001F97A😳\U0001F97A"
+
+	greetings                     = "Привет, меня зовут Кузькой, можно Кузенькой. Я маленький ещё, семь веков всего, восьмой пошёл."
+	cuteness                      = "😳\U0001F97A😳\U0001F97A😳\U0001F97A"
+	showYourselfPhotoErrorMessage = "Ой! Стесняюсь я"
+	showYourselfMessage           = "туточки я"
+	thankYouResponse              = "Я просто делаю свою работу. Работать буду по совести. За хозяйство не бойся. Конюшня есть?"
+	errorMessageDefault           = "Ошибка!"
 )
 
 func init() {
@@ -141,7 +146,7 @@ func processMessage(update tgbotapi.Update, bot *tgbotapi.BotAPI) string {
 		case "дурак":
 			reply = "Сам дурак."
 		case "спасибо":
-			reply = "Я просто делаю свою работу. Работать буду по совести. За хозяйство не бойся. Конюшня есть?"
+			reply = thankYouResponse
 		}
 	}
 
@@ -174,19 +179,15 @@ func showWeather(place string) string {
 }
 
 func showYourself(bot *tgbotapi.BotAPI, chatID int64) string {
-	reply := "туточки я"
+	reply := showYourselfMessage
 
 	photoName := generatePhotoName()
 	photoBytes, err := ioutil.ReadFile(makePhotoPath(photoName))
 
 	if err != nil {
-		return "Ой! Стесняюсь я"
+		return showYourselfPhotoErrorMessage
 	} else {
 		sendPhoto(bot, chatID, photoBytes, photoName)
 		return reply
 	}
-}
-
-func isMessageForBot(message PreparedMessage) bool {
-	return chatovoyNames[message.botMention] || existingSkills[message.skillName] && message.isReplyForBotMessage
 }

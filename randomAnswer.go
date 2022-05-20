@@ -1,13 +1,12 @@
 package main
 
 import (
-  "math/rand"
-  "time"
+	"math/rand"
+	"time"
 )
 
-func getRandomAnswer() string {
-
-  answers := []string {
+var (
+	answers = []string{
 		"да.",
 		"ну, уж нет. Спасибо этому дому, пойду к другому!",
 		"ёщё чего!",
@@ -19,6 +18,9 @@ func getRandomAnswer() string {
 		"не знаю, не знаю.",
 		"спроси потом ещё раз, мне сейчас не до этого.",
 	}
-  rand.Seed(time.Now().UnixNano())
-  return "Мой ответ: " + answers[rand.Intn(len(answers))]
+)
+
+func getRandomAnswer() string {
+	rand.Seed(time.Now().UnixNano())
+	return "Мой ответ: " + answers[rand.Intn(len(answers))]
 }

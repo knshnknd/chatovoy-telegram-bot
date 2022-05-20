@@ -18,7 +18,7 @@ func requestWeatherByPlace(place string) string {
 		err = w.CurrentByName(place)
 
 		if err != nil {
-			return "Ошибка!"
+			return errorMessageDefault
 		}
 
 		currentWeather := fmt.Sprintf("Погода в городе %s: %.1f °C, %s, влажность: %d%%",
@@ -33,7 +33,7 @@ func requestWeatherByPlace(place string) string {
 		err = f.DailyByName(place, 5)
 
 		if err != nil {
-			return "Ошибка!"
+			return errorMessageDefault
 		}
 
 		return currentWeather

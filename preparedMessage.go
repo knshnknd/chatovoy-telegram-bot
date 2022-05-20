@@ -41,6 +41,10 @@ func isReplyForBot(update tgbotapi.Update, bot *tgbotapi.BotAPI) bool {
 	return reply.From.ID == bot.Self.ID
 }
 
+func isMessageForBot(message PreparedMessage) bool {
+	return chatovoyNames[message.botMention] || existingSkills[message.skillName] && message.isReplyForBotMessage
+}
+
 func stringContainsInMap(splitTextFromMessage []string, arrayOfResults map[string]bool, startIndex int) string {
 	result := ""
 	currentString := ""
