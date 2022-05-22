@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"io/ioutil"
@@ -56,21 +55,12 @@ const (
 	errorMessageDefault           = "Ошибка!"
 )
 
-func init() {
-	// меняем BOT_TOKEN на токен бота от BotFather, в строке принимаем на входе флаг -telegrambottoken
-	flag.StringVar(&telegramBotToken, "telegrambottoken", "", "Telegram Bot Token")
-	flag.StringVar(&openweathermapToken, "openweathermapToken", "", "OpenWeatherMap Token")
-	flag.Parse()
-
-	// без флага не запускаем
-	if telegramBotToken == "" {
-		log.Print("-telegrambottoken is required")
-		os.Exit(1)
-	}
-}
-
 func main() {
-	// используя токен, создаем новый инстанс бота
+	telegramBotToken = os.Getenv("TELEGRAMBOT_TOKEN")
+	openweathermapToken = os.Getenv("OPENWEATHERMAP_TOKEN")
+	fmt.Println(telegramBotToken)
+	fmt.Println(openweathermapToken)
+
 	bot, err := tgbotapi.NewBotAPI(telegramBotToken)
 	if err != nil {
 		log.Panic(err)
