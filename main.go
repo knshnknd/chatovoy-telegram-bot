@@ -23,11 +23,12 @@ var (
 	}
 
 	existingSkills = map[string]bool{
-		"покажись": true,
-		"ответь":   true,
-		"погода":   true,
-		"дурак":    true,
-		"спасибо":  true,
+		"расскажись": true,
+		"покажись":   true,
+		"ответь":     true,
+		"погода":     true,
+		"дурак":      true,
+		"спасибо":    true,
 	}
 
 	chatovoyNames = map[string]bool{

@@ -9,6 +9,9 @@ RUN go mod download
 
 COPY *.go ./
 
+RUN mkdir "/app/resources"
+COPY resources/ /app/resources
+
 RUN go build -o /chatovoy
 
 CMD ["/chatovoy"]
