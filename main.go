@@ -14,28 +14,30 @@ var (
 	openweathermapToken string
 
 	skills = []Skill{
-		{name: "расскажись", description: "ну вы уже поняли как оно работает"},
-		{name: "покажись", description: "явлюсь к вам во всей своей красе"},
-		{name: "ответь", description: "с вас вопрос с меня ответ"},
-		{name: "погода", description: "выгляну в окно за вас"},
-		{name: "дурак", description: "даже не думай"},
-		{name: "спасибо", description: "вежливость у нас в почёте"},
+		{name: introduceSkill, description: "ну вы уже поняли как оно работает"},
+		{name: showSkill, description: "явлюсь к вам во всей своей красе"},
+		{name: answerSkill, description: "с вас вопрос с меня ответ"},
+		{name: weatherSkill, description: "выгляну в окно за вас"},
+		{name: youFoolSkill, description: "даже не думай"},
+		{name: thankYouSkill, description: "вежливость у нас в почёте"},
+		{name: currencyCommand, description: "невнятный курс валют без любимого рублика"},
+		{name: timeCommand, description: "текущее время в главных городах мира"},
 	}
 
 	existingSkills = map[string]bool{
-		"расскажись": true,
-		"покажись":   true,
-		"ответь":     true,
-		"погода":     true,
-		"дурак":      true,
-		"спасибо":    true,
+		introduceSkill: true,
+		showSkill:      true,
+		answerSkill:    true,
+		weatherSkill:   true,
+		youFoolSkill:   true,
+		thankYouSkill:  true,
 	}
 
 	chatovoyNames = map[string]bool{
-		"чтв":              true,
-		"чатовой":          true,
-		"@chatovoybot":     true,
-		"солнышко заинька": true,
+		shortName: true,
+		fullName:  true,
+		botName:   true,
+		cuteName:  true,
 	}
 )
 
@@ -54,6 +56,24 @@ const (
 	showYourselfMessage           = "туточки я"
 	thankYouResponse              = "Я просто делаю свою работу. Работать буду по совести. За хозяйство не бойся. Конюшня есть?"
 	errorMessageDefault           = "Ошибка!"
+	skillsIntroduction            = "а вот что я умею:"
+	foolMessage                   = "Сам дурак."
+
+	introduceSkill = "расскажись"
+	showSkill      = "покажись"
+	answerSkill    = "ответь"
+	weatherSkill   = "погода"
+	youFoolSkill   = "дурак"
+	thankYouSkill  = "спасибо"
+
+	startCommand    = "start"
+	currencyCommand = "currency"
+	timeCommand     = "time"
+
+	shortName = "чтв"
+	fullName  = "чатовой"
+	botName   = "@chatovoybot"
+	cuteName  = "солнышко заинька"
 )
 
 func main() {
@@ -110,11 +130,11 @@ func processCommand(update tgbotapi.Update) string {
 	reply := ""
 
 	switch command {
-	case "start":
+	case startCommand:
 		reply = greetings
-	case "currency":
+	case currencyCommand:
 		reply = getCurrency()
-	case "time":
+	case timeCommand:
 		reply = getTime()
 	}
 	return reply
@@ -126,22 +146,22 @@ func processMessage(update tgbotapi.Update, bot *tgbotapi.BotAPI) string {
 
 	if isMessageForBot(message) {
 		switch message.skillName {
-		case "расскажись":
+		case introduceSkill:
 			reply = introduceYourself()
-		case "покажись":
+		case showSkill:
 			reply = showYourself(bot, message.fromChat)
-		case "ответь":
+		case answerSkill:
 			reply = getRandomAnswer()
-		case "погода":
+		case weatherSkill:
 			reply = showWeather(message.skillParameter)
-		case "дурак":
-			reply = "Сам дурак."
-		case "спасибо":
+		case youFoolSkill:
+			reply = foolMessage
+		case thankYouSkill:
 			reply = thankYouResponse
 		}
 	}
 
-	if message.botMention == "солнышко заинька" {
+	if message.botMention == cuteName {
 		reply += " " + cuteness
 	}
 
@@ -154,8 +174,6 @@ func sendMessage(bot *tgbotapi.BotAPI, chatID int64, message string) {
 }
 
 func introduceYourself() string {
-	skillsIntroduction := "а вот что я умею:"
-
 	skillsText := ""
 
 	for _, elem := range skills {

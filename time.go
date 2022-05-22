@@ -7,7 +7,7 @@ import (
 
 func getTime() string {
 	timeTbilisi := getTimeForRegion("Asia/Tbilisi", "Tbilisi")
-	timeMoscow := getTimeForRegion("Europe/Moscow", "Moscow")
+	timeMoscow := getTimeForRegion("Asia/Nicosia", "Limassol")
 	timeKrasnoyarsk := getTimeForRegion("Asia/Krasnoyarsk", "Krasnoyarsk")
 	timeBeijing := getTimeForRegion("Asia/Shanghai", "Shanghai")
 
