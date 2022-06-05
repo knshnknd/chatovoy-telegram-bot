@@ -6,11 +6,13 @@ import (
 )
 
 func prepareMessage(update tgbotapi.Update, bot *tgbotapi.BotAPI) PreparedMessage {
+	userId := update.Message.From.ID
 	message := update.Message.Text
-	messageLowercase := strings.ToLower(message)
 	chatID := update.Message.Chat.ID
-	splitTextFromMessage := strings.Split(messageLowercase, " ")
 	isReplyForBotMessage := isReplyForBot(update, bot)
+
+	lowercaseMessage := strings.ToLower(message)
+	splitTextFromMessage := strings.Split(lowercaseMessage, " ")
 
 	botMention := stringContainsInMap(splitTextFromMessage, chatovoyNames, 0)
 	botMentionLength := len(strings.Fields(botMention))
@@ -21,10 +23,9 @@ func prepareMessage(update tgbotapi.Update, bot *tgbotapi.BotAPI) PreparedMessag
 	parameter := parseParam(splitTextFromMessage, skillNameLength+botMentionLength)
 
 	return PreparedMessage{
+		userId,
 		chatID,
 		message,
-		messageLowercase,
-		splitTextFromMessage,
 		isReplyForBotMessage,
 		botMention,
 		skillName,
@@ -84,10 +85,9 @@ type Skill struct {
 }
 
 type PreparedMessage struct {
+	senderId             int64
 	fromChat             int64
 	originalMessage      string
-	lowercaseMessage     string
-	splitMessage         []string
 	isReplyForBotMessage bool
 
 	botMention     string
