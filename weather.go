@@ -6,18 +6,6 @@ import (
 	"log"
 )
 
-func requestWeatherByPlace(place string) string {
-	if place == specialPlace {
-		return balconyWeather()
-	} else {
-		weatherByPlace, err := weatherByPlace(place)
-		if err != nil {
-			return errorMessageDefault
-		}
-		return oneCityResponse(weatherByPlace)
-	}
-}
-
 func weatherByPlace(place string) (*owm.CurrentWeatherData, error) {
 	w, err := owm.NewCurrent("C", "ru", openweathermapToken)
 	if err != nil {

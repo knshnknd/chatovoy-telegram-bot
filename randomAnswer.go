@@ -1,10 +1,5 @@
 package main
 
-import (
-	"math/rand"
-	"time"
-)
-
 var (
 	answers = []string{
 		"да.",
@@ -19,8 +14,3 @@ var (
 		"спроси потом ещё раз, мне сейчас не до этого.",
 	}
 )
-
-func getRandomAnswer() string {
-	rand.Seed(time.Now().UnixNano())
-	return "Мой ответ: " + answers[rand.Intn(len(answers))]
-}

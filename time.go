@@ -5,15 +5,6 @@ import (
 	"time"
 )
 
-func getTime() string {
-	timeTbilisi := getTimeForRegion("Asia/Tbilisi", "Tbilisi")
-	timeMoscow := getTimeForRegion("Asia/Nicosia", "Limassol")
-	timeKrasnoyarsk := getTimeForRegion("Asia/Krasnoyarsk", "Krasnoyarsk")
-	timeBeijing := getTimeForRegion("Asia/Shanghai", "Shanghai")
-
-	return timeMoscow + "\n" + timeTbilisi + "\n" + timeKrasnoyarsk + "\n" + timeBeijing
-}
-
 func getTimeForRegion(locationName, name string) string {
 	location, _ := time.LoadLocation(locationName)
 	currentTime := time.Now().In(location)

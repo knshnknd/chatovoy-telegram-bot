@@ -5,11 +5,22 @@ import (
 	"strings"
 )
 
-func prepareMessage(update tgbotapi.Update, bot *tgbotapi.BotAPI) PreparedMessage {
+type PreparedMessage struct {
+	senderId             int64
+	fromChat             int64
+	originalMessage      string
+	isReplyForBotMessage bool
+
+	botMention     string
+	skillName      string
+	skillParameter string
+}
+
+func prepareMessage(update *tgbotapi.Update) PreparedMessage {
 	userId := update.Message.From.ID
 	message := update.Message.Text
 	chatID := update.Message.Chat.ID
-	isReplyForBotMessage := isReplyForBot(update, bot)
+	isReplyForBotMessage := isReplyForBot(update)
 
 	lowercaseMessage := strings.ToLower(message)
 	splitTextFromMessage := strings.Split(lowercaseMessage, " ")
@@ -33,7 +44,7 @@ func prepareMessage(update tgbotapi.Update, bot *tgbotapi.BotAPI) PreparedMessag
 	}
 }
 
-func isReplyForBot(update tgbotapi.Update, bot *tgbotapi.BotAPI) bool {
+func isReplyForBot(update *tgbotapi.Update) bool {
 	reply := update.Message.ReplyToMessage
 	if reply == nil || reply.From == nil {
 		return false
@@ -77,20 +88,4 @@ func parseParam(splitTextFromMessage []string, startIndex int) string {
 	}
 
 	return parameter
-}
-
-type Skill struct {
-	name        string
-	description string
-}
-
-type PreparedMessage struct {
-	senderId             int64
-	fromChat             int64
-	originalMessage      string
-	isReplyForBotMessage bool
-
-	botMention     string
-	skillName      string
-	skillParameter string
 }
