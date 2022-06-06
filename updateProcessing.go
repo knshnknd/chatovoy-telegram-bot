@@ -36,7 +36,7 @@ func logMessage(message *PreparedMessage) {
 			message.skillParameter,
 		)
 		if err != nil {
-			log.Fatal(err)
+			log.Println(err)
 		}
 	}
 }
