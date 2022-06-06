@@ -2,13 +2,21 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
+	"os"
 )
 
 func initDB() {
-	psqlInfo := "host=localhost port=54320 user=sandbox " +
-		"password=sandbox dbname=sandbox sslmode=disable"
+	databaseHost := os.Getenv("DB_HOST")
+	databasePost := os.Getenv("DB_PORT")
+	databaseName := os.Getenv("DB_DATABASE")
+	username := os.Getenv("DB_USERNAME")
+	password := os.Getenv("DB_PASSWORD")
 
+	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s "+
+		"password=%s dbname=%s sslmode=disable", databaseHost, databasePost, username, password, databaseName)
+	fmt.Println(psqlInfo)
 	var err error
 	DB, err = sql.Open("pgx", psqlInfo)
 
@@ -31,15 +39,15 @@ func turnOffDbFeatures() {
 	existingSkills[bonusesSkill] = false
 }
 
-func requestsCountBySkillAndUser(skill string, userId int64) int {
+func requestsCountBySkillAndUser(skill string, userId int64) (int, error) {
 	var number int
 
 	if databaseIsActive {
 		err := DB.QueryRow("SELECT COUNT(*) FROM requests WHERE skill_name=$1 AND sender_id=$2", skill, userId).Scan(&number)
 		if err != nil {
-			log.Fatal(err)
+			return 0, err
 		}
 	}
 
-	return number
+	return number, nil
 }

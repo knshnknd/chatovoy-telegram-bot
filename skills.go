@@ -55,7 +55,11 @@ const (
 
 func howManyThankYou(userId int64) string {
 	if databaseIsActive {
-		return fmt.Sprintf("Спасиб на вашем счету: %d", requestsCountBySkillAndUser(thankYouSkill, userId))
+		counter, err := requestsCountBySkillAndUser(thankYouSkill, userId)
+		if err != nil {
+			return errorMessageDefault
+		}
+		return fmt.Sprintf("Спасиб на вашем счету: %d", counter)
 	}
 
 	return ""
